@@ -10,5 +10,6 @@ package-install:
 package-uninstall:
 	pip uninstall hexlet-code
 
-make lint:
-	poetry run flake8 hexlet-code
+lint:
+	poetry run flake8 page_loader
+
