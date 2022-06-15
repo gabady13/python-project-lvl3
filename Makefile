@@ -4,8 +4,8 @@ install:
 build:
 	@poetry build
 
-package-install:
-	pip install --user dist/*.whl
+package-install:build
+	python3 -m pip install dist/*.whl
 
 package-uninstall:
 	pip uninstall hexlet-code
@@ -13,3 +13,5 @@ package-uninstall:
 lint:
 	poetry run flake8 page_loader
 
+test:
+	poetry run pytest

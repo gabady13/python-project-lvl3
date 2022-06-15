@@ -1,4 +1,3 @@
-import pytest
 import os
 import tempfile
 
@@ -23,9 +22,9 @@ EXPECTED_DATA = read_file(FIXTURE_NAME)
 def test_download(requests_mock):
     requests_mock.get(SOURCE_PATH, text=EXPECTED_DATA)
 
-    with tempfile.TemporaryDirectory() as tmpdirname:
-        expected = os.path.join(tmpdirname, FIXTURE_NAME)
-        actual = download(SOURCE_PATH, tmpdirname)
+    with tempfile.TemporaryDirectory() as dirname:
+        expected = os.path.join(dirname, FIXTURE_NAME)
+        actual = download(SOURCE_PATH, dirname)
 
         assert EXPECTED_DATA == open(actual).read()
         assert expected == actual
