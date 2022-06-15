@@ -102,6 +102,10 @@ typing-extensions = [
     {file = "typing_extensions-4.2.0-py3-none-any.whl", hash = "sha256:6657594ee297170d19f67d55c05852a874e7eb634f4f753dbd667855e07c1708"},
     {file = "typing_extensions-4.2.0.tar.gz", hash = "sha256:f1c24655a0da0d1b67f07e17a5e6b2a105894e6824b92096378bb3668ef02376"},
 ]
+requests-mock = [
+    {file = "requests-mock-1.9.3.tar.gz", hash = "sha256:8d72abe54546c1fc9696fa1516672f1031d72a55a1d66c85184f972a24ba0eba"},
+    {file = "requests_mock-1.9.3-py2.py3-none-any.whl", hash = "sha256:0a2d38a117c08bb78939ec163522976ad59a6b7fdd82b709e23bb98004a44970"},
+]
 zipp = [
     {file = "zipp-3.8.0-py3-none-any.whl", hash = "sha256:c4f6e5bbf48e74f7a38e7cc5b0480ff42b0ae5178957d564d18932525d5cf099"},
     {file = "zipp-3.8.0.tar.gz", hash = "sha256:56bf8aadb83c24db6c4b577e13de374ccfb67da2078beba1d037c17980bf43ad"},
