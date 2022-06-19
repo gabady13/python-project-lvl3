@@ -10,5 +10,4 @@
 ```bash
 make package-install # add executable
 download --output DIR https://yourdomain.com/some/path
-
-[![asciicast](https://asciinema.org/a/wAiKWikmyvPLBSh43bbLtjFqj.svg)](https://asciinema.org/a/wAiKWikmyvPLBSh43bbLtjFqj)
+[![asciicast](https://asciinema.org/a/wAiKWikmyvPLBSh43bbLtjFqj.svg)](https://asciinema.org/a/wAiKWikmyvPLBSh43bbLtjFqj)]
