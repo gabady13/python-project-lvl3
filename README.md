@@ -4,3 +4,12 @@
 [![Maintainability](https://api.codeclimate.com/v1/badges/91f947d333ceb49870a3/maintainability)](https://codeclimate.com/github/gabady13/python-project-lvl3/maintainability)
 
 [![Test Coverage](https://api.codeclimate.com/v1/badges/91f947d333ceb49870a3/test_coverage)](https://codeclimate.com/github/gabady13/python-project-lvl3/test_coverage)
+
+
+## Setup
+```bash
+make package-install # add executable
+download --output DIR https://yourdomain.com/some/path
+```
+
+[![asciicast](https://asciinema.org/a/wAiKWikmyvPLBSh43bbLtjFqj.svg)](https://asciinema.org/a/wAiKWikmyvPLBSh43bbLtjFqj)
