@@ -1,5 +1,7 @@
 #!/usr/bin/env python3.10
 
+"""Page Loader Main Script."""
+
 import argparse
 
 from page_loader.download import DEFAULT_DST_FOLDER, download
@@ -9,6 +11,7 @@ HELP = 'set output folder'
 
 
 def main():
+    """Run Page Loader script."""
     parser = argparse.ArgumentParser(description=DESCRIPTION)
     parser.add_argument('source')
     parser.add_argument(

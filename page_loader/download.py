@@ -1,9 +1,10 @@
+"""Page Loader Download."""
+
 import os
 import re
+from urllib.parse import urljoin, urlparse
 
 import requests
-
-from urllib.parse import urljoin, urlparse
 from bs4 import BeautifulSoup
 
 DEFAULT_DST_FOLDER = os.getcwd()
@@ -17,8 +18,8 @@ def check_domain(outer_host: str, inner_host: str):
 
 def parse_url(url: str):
     """Split url on host and path."""
-    url_parts = urlparse(url)
-    return (url_parts.hostname, url_parts.path[1:])
+    url_parse = urlparse(url)
+    return (url_parse.hostname, url_parse.path[1:])
 
 
 def make_name(url):
@@ -68,7 +69,7 @@ def parse_html(url: str, dst: str, html: str):
 
 
 def download(src: str, dst: str = DEFAULT_DST_FOLDER):
-    """Download html page to dst folder."""
+    """Download html page to dst."""
     request = requests.get(src)
     html_name, html_data = parse_html(src, dst, request.text)
     with open(os.path.join(dst, html_name), 'w') as filename:
