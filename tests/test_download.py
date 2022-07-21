@@ -67,7 +67,7 @@ def test_download_html_data(requests_mock):
         assert read_file(actual) == after
 
 
-'''def test_download_structire(requests_mock):
+def test_download_structire(requests_mock):
     requests_mock.get(SOURCE_PATH, text=before)
     requests_mock.get(
         'https://ru.hexlet.io/assets/professions/python.png',
@@ -77,6 +77,5 @@ def test_download_html_data(requests_mock):
     with tempfile.TemporaryDirectory() as tmpdirname:
         download(SOURCE_PATH, tmpdirname)
         actual = list_dir(tmpdirname)
-        expected = list_dir(os.path.join(DIR_PATH, 'fixtures/after'))
-
-    assert expected == actual'''
+        result = list_dir(os.path.join(DIR_PATH, 'fixtures/after'))[::-1]
+        assert result == actual
