@@ -1,66 +1,60 @@
 import os
 import tempfile
+import requests_mock as req_mock
 
 from page_loader import download
 
 DIR_PATH = os.path.dirname(__file__)
 SOURCE_PATH = 'https://ru.hexlet.io/courses'
-ASSERTS_PATH = 'https://ru.hexlet.io/assets/professions/python.png'
-FIXTURE_NAME = {
+names_fixture = {
     'html_after': 'ru-hexlet-io-courses.html',
     'html_before': 'courses.html',
     'image': 'ru-hexlet-io-assets-professions-python.png',
+    'css': 'ru-hexlet-io-assets-application.css',
+    'js': 'ru-hexlet-io-packs-js-runtime.js',
     'folder': 'ru-hexlet-io-courses_files',
 }
 
 
-def get_fixture_path(filename, subpath=''):
-    return os.path.join(DIR_PATH, 'fixtures', subpath, filename)
+def get_fixture_path(filename):
+    return os.path.join(DIR_PATH, 'fixtures', filename)
 
 
-def read_file(filename, subpath='', mode='r'):
-    return open(get_fixture_path(filename, subpath), mode).read()
+def read_file(filename):
+    return open(get_fixture_path(filename)).read()
 
 
-before = read_file(FIXTURE_NAME['html_before'], 'before')
-after = read_file(FIXTURE_NAME['html_after'], 'after')
-image = read_file(
-    FIXTURE_NAME['image'],
-    os.path.join('after', FIXTURE_NAME['folder']),
-    'rb',
-)
+before = read_file('before.html')
+after = read_file('after.html')
+structure = [
+    names_fixture['folder'],
+    names_fixture['image'],
+    names_fixture['js'],
+    names_fixture['css'],
+    names_fixture['html_after'],
+    names_fixture['html_after'],
+]
 
 
-def check_entry(entry):
-    return entry.name if entry.is_file() else [entry.name, list_dir(entry)]
-
-
-def list_dir(dir_path):
-    with os.scandir(dir_path) as it:
-        return [check_entry(entry) for entry in it]
+def dir_tree(dir_parth):
+    tree = []
+    for _, dir, file in os.walk(dir_parth):
+        tree.extend(dir + file)
+    return tree
 
 
 def test_download(requests_mock):
-    requests_mock.get(SOURCE_PATH, text=before)
-    requests_mock.get(
-        'https://ru.hexlet.io/assets/professions/python.png',
-        content=image,
-    )
+    requests_mock.get(req_mock.ANY, text=before)
 
     with tempfile.TemporaryDirectory() as tmpdirname:
-        expected = os.path.join(tmpdirname, FIXTURE_NAME['html_after'])
+        expected = os.path.join(tmpdirname, names_fixture['html_after'])
         actual = download(SOURCE_PATH, tmpdirname)
 
         assert expected == actual
 
 
 def test_download_html_data(requests_mock):
-    requests_mock.get(SOURCE_PATH, text=before)
-    requests_mock.get(
-        'https://ru.hexlet.io/assets/professions/python.png',
-        content=image,
-    )
-
+    requests_mock.get(req_mock.ANY, text=before)
     with tempfile.TemporaryDirectory() as tmpdirname:
         actual = download(SOURCE_PATH, tmpdirname)
 
@@ -68,14 +62,8 @@ def test_download_html_data(requests_mock):
 
 
 def test_download_structire(requests_mock):
-    requests_mock.get(SOURCE_PATH, text=before)
-    requests_mock.get(
-        'https://ru.hexlet.io/assets/professions/python.png',
-        content=image,
-    )
-
+    requests_mock.get(req_mock.ANY, text=before)
     with tempfile.TemporaryDirectory() as tmpdirname:
         download(SOURCE_PATH, tmpdirname)
-        actual = list_dir(tmpdirname)
-        result = list_dir(os.path.join(DIR_PATH, 'fixtures/after'))[::-1]
-        assert result == actual
+        actual = dir_tree(tmpdirname)
+        assert sorted(actual) == sorted(structure)

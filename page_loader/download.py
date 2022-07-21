@@ -10,35 +10,40 @@ from bs4 import BeautifulSoup
 
 DEFAULT_DST_FOLDER = os.getcwd()
 
+link_attr = {
+    'img': 'src',
+    'link': 'href',
+    'script': 'src',
+}
 
-def check_domain(outer_host: str, inner_host: str) -> bool:
+
+def has_attr(tag):
+    """Check tag has attrs 'srx' or 'href'."""
+    return tag.has_attr('src') or tag.has_attr('href')
+
+
+def is_localdomain(outer_host: str, inner_host: str) -> bool:
     """Check local assets for local domain."""
-    url_parts = urlparse(inner_host)
+    inner_parts = urlparse(inner_host)
+    outer_parts = urlparse(outer_host)
 
-    return url_parts.hostname is None or outer_host in url_parts.hostname
-
-
-def parse_url(url: str) -> Tuple:
-    """Split url on host and path."""
-    url_parts = urlparse(url)
-
-    return (url_parts.hostname, url_parts.path[1:])
+    return (inner_parts.hostname is
+            None or outer_parts.hostname == inner_parts.hostname)
 
 
 def make_name(url) -> str:
     """Make name for assets."""
-    hostname, path = parse_url(url)
-    name, extension = os.path.splitext(path)
-
-    name = re.sub(r'\W', '-', os.path.join(hostname, name))
+    url_parts = urlparse(url)
+    name, extension = os.path.splitext(url_parts.path[1:])
+    name = re.sub(r'\W', '-', os.path.join(url_parts.hostname, name))
     extension = extension if extension else '.html'
-
     return '{0}{1}'.format(name, extension)
 
 
-def make_folder(filename: str, dst: str) -> str:
+def make_folder(url: str, dst: str) -> str:
     """Create folder for assets and return folder name."""
-    foldername = filename.replace('.html', '_files')
+    filename, _ = os.path.splitext(make_name(url))
+    foldername = '{0}{1}'.format(filename, '_files')
     os.mkdir(os.path.join(dst, foldername))
 
     return foldername
@@ -57,33 +62,29 @@ def download_assets(src: str, dst: str) -> None:
 
 def parse_html(url: str, dst: str, html: str) -> Tuple:
     """Parse html file."""
-    html_name = make_name(url)
-
     soup = BeautifulSoup(html, 'html.parser')
     assets = (
         asset
-        for asset in soup.find_all('img')
-        if check_domain(url, asset.get('src'))
+        for asset in soup.find_all(['img', 'link', 'script'])
+        if is_localdomain(url, asset.get(link_attr[asset.name]))
     )
 
     if assets:
-        assets_dst = make_folder(html_name, dst)
-
+        assets_dst = make_folder(url, dst)
         for asset in assets:
             asset_name = download_assets(
-                urljoin(url, asset.get('src')),
-                os.path.join(dst, assets_dst),
-            )
+                urljoin(url, asset.get(link_attr[asset.name])),
+                os.path.join(dst, assets_dst))
+            asset[link_attr[asset.name]] = os.path.join(assets_dst, asset_name)
 
-            asset['src'] = os.path.join(assets_dst, asset_name)
-
-    return html_name, soup.prettify()
+    return soup.prettify()
 
 
-def download(src: str, dst: str = DEFAULT_DST_FOLDER) -> str:
+def download(url: str, dst: str = DEFAULT_DST_FOLDER):
     """Download html page to dst folder."""
-    req = requests.get(src)
-    html_name, html_data = parse_html(src, dst, req.text)
+    request = requests.get(url, stream=True)
+    html_name = make_name(url)
+    html_data = parse_html(url, dst, request.text)
 
     with open(os.path.join(dst, html_name), 'w') as filename:
         filename.write(html_data)
