@@ -1,92 +1,68 @@
 """Page Loader Download Module."""
 
 import os
-import re
-from typing import Tuple
-from urllib.parse import urljoin, urlparse
+from urllib.parse import urljoin
 
 import requests
-from bs4 import BeautifulSoup
+from page_loader.common import make_filename, make_foldername
+from page_loader.logger import logger
+from page_loader.parser import parse_page
 
 DEFAULT_DST_FOLDER = os.getcwd()
-
-link_attr = {
-    'img': 'src',
-    'link': 'href',
-    'script': 'src',
-}
+CHUNK_SIZE = 128
 
 
-def has_attr(tag):
-    """Check tag has attrs 'srx' or 'href'."""
-    return tag.has_attr('src') or tag.has_attr('href')
+def read_file(file_path):
+    """Read file."""
+    with open(file_path) as filename:
+        return filename.read()
 
 
-def is_localdomain(outer_host: str, inner_host: str) -> bool:
-    """Check local assets for local domain."""
-    inner_parts = urlparse(inner_host)
-    outer_parts = urlparse(outer_host)
+def download_file(url, dst=DEFAULT_DST_FOLDER):
+    """Download file to dst folder."""
+    file_name = make_filename(url)
+    file_path = os.path.join(dst, file_name)
 
-    return (inner_parts.hostname is
-            None or outer_parts.hostname == inner_parts.hostname)
+    try:
+        req = requests.get(url, stream=True)
+    except Exception as error:
+        logger.error(error)
 
+    try:
+        with open(file_path, 'wb') as filename:
+            for chunk in req.iter_content(CHUNK_SIZE):
+                filename.write(chunk)
+    except FileNotFoundError as file_error:
+        logger.error(file_error)
 
-def make_name(url) -> str:
-    """Make name for assets."""
-    url_parts = urlparse(url)
-    name, extension = os.path.splitext(url_parts.path[1:])
-    name = re.sub(r'\W', '-', os.path.join(url_parts.hostname, name))
-    extension = extension if extension else '.html'
-    return '{0}{1}'.format(name, extension)
-
-
-def make_folder(url: str, dst: str) -> str:
-    """Create folder for assets and return folder name."""
-    filename, _ = os.path.splitext(make_name(url))
-    foldername = '{0}{1}'.format(filename, '_files')
-    os.mkdir(os.path.join(dst, foldername))
-
-    return foldername
+    return file_name
 
 
-def download_assets(src: str, dst: str) -> None:
-    """Download assets for page."""
-    req = requests.get(src, stream=True)
-    assert_name = make_name(src)
+def download_assets(url, asserts_urls, dst):
+    """Download assets."""
+    assets_folder = make_foldername(url)
+    assets_path = os.path.join(dst, assets_folder)
 
-    with open(os.path.join(dst, assert_name), 'wb') as filename:
-        filename.write(req.content)
+    if not os.path.exists(assets_path):
+        try:
+            os.mkdir(assets_path)
+        except OSError as error:
+            logger.exception(error)
 
-    return assert_name
-
-
-def parse_html(url: str, dst: str, html: str) -> Tuple:
-    """Parse html file."""
-    soup = BeautifulSoup(html, 'html.parser')
-    assets = (
-        asset
-        for asset in soup.find_all(['img', 'link', 'script'])
-        if is_localdomain(url, asset.get(link_attr[asset.name]))
-    )
-
-    if assets:
-        assets_dst = make_folder(url, dst)
-        for asset in assets:
-            asset_name = download_assets(
-                urljoin(url, asset.get(link_attr[asset.name])),
-                os.path.join(dst, assets_dst))
-            asset[link_attr[asset.name]] = os.path.join(assets_dst, asset_name)
-
-    return soup.prettify()
+    for asserts_url in asserts_urls:
+        download_file(urljoin(url, asserts_url), assets_path)
 
 
 def download(url: str, dst: str = DEFAULT_DST_FOLDER):
     """Download html page to dst folder."""
-    request = requests.get(url, stream=True)
-    html_name = make_name(url)
-    html_data = parse_html(url, dst, request.text)
+    page_name = download_file(url, dst)
+    page_path = os.path.join(dst, page_name)
+    page_data, assets_urls = parse_page(url, read_file(page_path))
 
-    with open(os.path.join(dst, html_name), 'w') as filename:
-        filename.write(html_data)
+    with open(page_path, 'w') as filename:
+        filename.write(page_data)
 
-    return os.path.join(dst, html_name)
+    if assets_urls:
+        download_assets(url, assets_urls, dst)
+
+    return page_path
