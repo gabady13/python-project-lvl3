@@ -10,6 +10,7 @@ from requests.exceptions import RequestException
 
 DESCRIPTION = 'Page Loader'
 HELP_MESSAGE = 'set output folder'
+END_MESSAGE = "Page was seccessfully download into '{0}'"
 
 
 def main():
@@ -26,9 +27,11 @@ def main():
     args = parser.parse_args()
 
     try:
-        download(args.source, args.output)
+        page = download(args.source, args.output)
     except (Exception, RequestException) as exc:
         sys.exit(exc)
+
+    print(END_MESSAGE.format(page))
 
 
 if __name__ == '__main__':

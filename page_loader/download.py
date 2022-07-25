@@ -7,6 +7,7 @@ import sys
 import requests
 from page_loader.common import make_filename, make_foldername
 from page_loader.parser import parse_page
+from page_loader.progress import ProgressSpinner
 from requests.exceptions import RequestException
 
 DEFAULT_DST_FOLDER = os.getcwd()
@@ -58,8 +59,10 @@ def download_assets(assets_urls, dst, url):
             raise OSError
 
     for asset_url in assets_urls:
-        asset_data = download_data(asset_url)
-        save_data(asset_data, assets_path, asset_url)
+        with ProgressSpinner('{0}'.format(asset_url)) as pro_bar:
+            asset_data = download_data(asset_url)
+            save_data(asset_data, assets_path, asset_url)
+            pro_bar.next()
 
 
 def download(url, dst=DEFAULT_DST_FOLDER):
