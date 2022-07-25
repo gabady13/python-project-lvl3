@@ -62,7 +62,7 @@ def download_assets(assets_urls, dst, url):
         save_data(asset_data, assets_path, asset_url)
 
 
-def download(url, dst = DEFAULT_DST_FOLDER):
+def download(url, dst=DEFAULT_DST_FOLDER):
     """Download html page to dst folder."""
     page_data = download_data(url)
     html, assets_urls = parse_page(page_data, url)

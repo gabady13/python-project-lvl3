@@ -23,8 +23,8 @@ def is_equal(first_url, second_url):
     second_url_parts = urlparse(second_url)
 
     return (
-        second_url_parts.hostname is None
-        or first_url_parts.hostname == second_url_parts.hostname
+        second_url_parts.hostname
+        is None or first_url_parts.hostname == second_url_parts.hostname
     )
 
 
