@@ -5,11 +5,11 @@
 import argparse
 import sys
 
-import page_loader.logger as logger
 from page_loader.download import DEFAULT_DST_FOLDER, download
+from requests.exceptions import RequestException
 
 DESCRIPTION = 'Page Loader'
-HELP = 'set output folder'
+HELP_MESSAGE = 'set output folder'
 
 
 def main():
@@ -19,7 +19,7 @@ def main():
     parser.add_argument(
         '-o',
         '--output',
-        help=HELP,
+        help=HELP_MESSAGE,
         default=DEFAULT_DST_FOLDER,
     )
 
@@ -27,9 +27,9 @@ def main():
 
     try:
         download(args.source, args.output)
-    except Exception as error:
-        logger.logger.error(error)
+    except (Exception, RequestException) as exc:
+        sys.exit(exc)
 
 
 if __name__ == '__main__':
-    sys.exit(main())
+    main()
