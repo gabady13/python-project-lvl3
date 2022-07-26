@@ -14,40 +14,29 @@ links_attrs = {
 }
 
 
-def is_equal(first_url, second_url):
-    """Check local assets for local domain."""
-    if first_url is None or second_url is None:
-        return False
-
-    first_url_parts = urlparse(first_url)
-    second_url_parts = urlparse(second_url)
-
-    return (
-        second_url_parts.hostname
-        is None or first_url_parts.hostname == second_url_parts.hostname
-    )
+def is_hosts_equal(page_host, asset_host):
+    """Check if asset host belongs to page host."""
+    return asset_host is None or page_host == asset_host
 
 
 def parse_page(page_data, url):
     """Parse html page."""
     html = BeautifulSoup(page_data, 'html.parser')
-    assets = [
-        asset
-        for asset in html.find_all(links)
-        if is_equal(url, asset.get(links_attrs[asset.name]))
-    ]
 
-    assets_urls = [
-        urljoin(url, asset.get(links_attrs[asset.name])) for asset in assets
-    ]
+    assets = []
 
-    for asset in assets:
-        asset_name = make_filename(
-            urljoin(url, asset.get(links_attrs[asset.name])),
-        )
-        asset[links_attrs[asset.name]] = os.path.join(
-            make_foldername(url),
-            asset_name,
-        )
+    assets_path = make_foldername(url)
 
-    return html.prettify(), assets_urls
+    for asset in html.find_all(links):
+        asset_attr = links_attrs[asset.name]
+        asset_src = asset.get(asset_attr)
+
+        if is_hosts_equal(urlparse(url).hostname, urlparse(asset_src).hostname):
+            asset_url = urljoin(url, asset_src)
+            asset_name = make_filename(asset_url)
+
+            asset[asset_attr] = os.path.join(assets_path, asset_name)
+
+            assets.append((asset_url, asset_name))
+
+    return html.prettify(), assets_path, assets

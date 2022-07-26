@@ -1,20 +1,48 @@
 """Logging module."""
 
 import logging
+import traceback
 
-logger = logging.getLogger(__name__)
+LOG_FILE = 'page-loader.log'
+DATE_FORMAT = '%d-%b-%y %H:%M:%S'
 
-format = logging.Formatter('%(name)s - %(levelname)s - %(message)s')
-handler = logging.StreamHandler()
-handler.setLevel(logging.WARNING)
-handler.setFormatter(format)
+log_formats = {
+    'DEBUG': '%(levelname)s: %(asctime)s - %(message)s',
+    'WARNING': '%(levelname)s: %(message)s',
+}
 
-file_format = logging.Formatter(
-    '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-)
-file_handler = logging.FileHandler('page_loader.log')
-file_handler.setLevel(logging.ERROR)
-file_handler.setFormatter(file_format)
 
-logger.addHandler(handler)
-logger.addHandler(file_handler)
+def get_file_handler():
+    """Get Logging FileHandler."""
+    file_handler = logging.FileHandler(LOG_FILE)
+    file_handler.setLevel(logging.DEBUG)
+    file_handler.setFormatter(
+        logging.Formatter(log_formats['DEBUG'], DATE_FORMAT),
+    )
+
+    return file_handler
+
+
+def get_stream_handler():
+    """Get Logging StreamHandler."""
+    stream_handler = logging.StreamHandler()
+    stream_handler.setLevel(logging.WARNING)
+    stream_handler.setFormatter(logging.Formatter(log_formats['WARNING']))
+
+    return stream_handler
+
+
+def get_logger(name):
+    """Get Logger."""
+    logger = logging.getLogger(name)
+    logger.setLevel(logging.DEBUG)
+    logger.addHandler(get_file_handler())
+    logger.addHandler(get_stream_handler())
+
+    return logger
+
+
+def write_traceback():
+    """Write to log file."""
+    with open(LOG_FILE, 'a') as log_file:
+        traceback.print_exc(file=log_file)
