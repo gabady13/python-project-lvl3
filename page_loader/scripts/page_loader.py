@@ -6,7 +6,7 @@ import argparse
 import sys
 
 from page_loader.download import DEFAULT_DST_FOLDER, download
-from requests.exceptions import RequestException
+from requests import ConnectionError, HTTPError, Timeout
 
 DESCRIPTION = 'Page Loader'
 HELP_MESSAGE = 'output dir (default: "{0}")'.format(DEFAULT_DST_FOLDER)
@@ -28,7 +28,7 @@ def main():
 
     try:
         page_path = download(args.url, args.output)
-    except (RequestException, Exception):
+    except (ConnectionError, HTTPError, OSError, PermissionError, Timeout):
         sys.exit(1)
 
     print(SUCCESS_MESSAGE.format(page_path))

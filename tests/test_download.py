@@ -21,7 +21,7 @@ names = {
     'css': 'ru-hexlet-io-assets-application.css',
 }
 
-status_codes = [404, 500]
+status_codes = [404, 500, 504]
 
 
 def get_fixture_path(filename):
@@ -29,7 +29,10 @@ def get_fixture_path(filename):
 
 
 def read_file(filename, mode='r'):
-    return open(get_fixture_path(filename), mode).read()
+    file = open(get_fixture_path(filename), mode)
+    file_read = file.read()
+    file.close()
+    return file_read
 
 
 contents = {
