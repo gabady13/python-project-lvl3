@@ -2,11 +2,12 @@
 
 """Page Loader Main Script."""
 
+
 import argparse
 import sys
 
+import requests
 from page_loader.download import DEFAULT_DST_FOLDER, download
-from requests import ConnectionError, HTTPError, Timeout
 
 DESCRIPTION = 'Page Loader'
 HELP_MESSAGE = 'output dir (default: "{0}")'.format(DEFAULT_DST_FOLDER)
@@ -28,7 +29,21 @@ def main():
 
     try:
         page_path = download(args.url, args.output)
-    except (ConnectionError, HTTPError, OSError, PermissionError, Timeout):
+    except requests.exceptions.HTTPError as e:
+        print('Failed to connect to server{0}, code {1} was returned {2}'
+              .format(e.request.url, type(e).__name__, str(e)))
+        sys.exit(1)
+    except requests.exceptions.ConnectionError as e:
+        print('Failed to load from {0}, error happens {1}:{2}'
+              .format(e.request.url, type(e).__name__, str(e)))
+        sys.exit(1)
+    except OSError as e:
+        print('Failed to save file, error happens. {0}:{1}'
+              .format(type(e).__name__, str(e)))
+        sys.exit(1)
+    except BaseException as e:
+        print('Unexpected error happens. {0}:{1}'
+              .format(type(e).__name__, str(e)))
         sys.exit(1)
 
     print(SUCCESS_MESSAGE.format(page_path))

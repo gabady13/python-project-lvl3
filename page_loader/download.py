@@ -14,7 +14,7 @@ DEFAULT_DST_FOLDER = os.getcwd()
 logger = get_logger(__name__)
 
 
-def get_resource(url):
+def get_resource(url, use_raise=True):
     """Download file."""
     try:
         req = requests.get(url)
@@ -22,7 +22,8 @@ def get_resource(url):
     except RequestException as exc:
         logger.warning('Resource "{0}" wasn\'t downloaded.'.format(url))
         logger.debug(exc, exc_info=True)
-        raise
+        if use_raise:
+            raise
 
     return req.content
 
@@ -57,8 +58,9 @@ def download_assets(assets, dst):
         suffix='%(percent)d%%',
     ) as progress:
         for asset_url, asset_name in assets:
-            asset_content = get_resource(asset_url)
-            save(asset_content, dst, asset_name)
+            asset_content = get_resource(asset_url, False)
+            if not(asset_content is None):
+                save(asset_content, dst, asset_name)
             progress.next()
 
 
